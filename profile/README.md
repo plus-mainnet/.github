@@ -1,4 +1,8 @@
 
+<div align="center">
+  <img src="https://raw.githubusercontent.com/plus-mainnet/.github/main/profile/logo.png" width="200" height="200" alt="PLUS Mainnet Logo">
+</div>
+
 # 🌟 Welcome to PLUS Mainnet Foundation
 
 **The Next-Generation Institutional-Grade AI Trading Blockchain**
