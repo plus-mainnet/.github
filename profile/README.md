@@ -3,8 +3,6 @@
 
 **The Next-Generation Institutional-Grade AI Trading Blockchain**
 
-<img src="https://raw.githubusercontent.com/ethereum/ethereum-org-website/dev/public/ethereum-logo-wireframe.png" width="800" height="300" alt="PLUS Mainnet" style="object-fit: cover; border-radius: 10px;">
-
 ## 🚀 About Us
 PLUS Mainnet is a high-performance EVM-compatible Layer 1 blockchain optimized for automated trading, high-frequency execution, and institutional liquidity.
 
