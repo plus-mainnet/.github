@@ -1,0 +1,110 @@
+name: PLUS Mainnet VIP Invite Bot (Verified)
+
+on:
+  issues:
+    types: [opened, labeled]
+
+permissions:
+  issues: write
+
+jobs:
+  auto_reply_on_open:
+    name: Reply to New Applications
+    if: github.event.action == 'opened'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if issue requests an invite
+        id: check_title
+        run: |
+          if [[ "${{ github.event.issue.title }}" =~ (Invite|코드|초대|Application) ]]; then
+            echo "match=true" >> $GITHUB_OUTPUT
+          else
+            echo "match=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Review Notification
+        if: steps.check_title.outputs.match == 'true'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const issueUser = context.payload.issue.user.login;
+            const commentBody = `
+            👋 **Hello @${issueUser}!** 
+            
+            Thank you for applying to the **PLUS Mainnet Lifetime Symbiosis Partnership**.
+            Because this is a highly exclusive VIP program (Lifetime 30% Passive Income), we cannot issue invite codes to just anyone.
+            
+            **[ 🔍 Verification Process ]**
+            1. Our Admin team will review the influencer/social channel link you provided in this issue.
+            2. We will also check if you have **Starred ⭐** this repository.
+            3. If verified, an admin will approve this application, and our bot will instantly generate your one-time VIP Invite Code.
+            
+            Please wait up to 24 hours for the manual review process. Thank you!
+            `;
+            
+            // Add the 'pending-review' label
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              labels: ['pending-review']
+            });
+            
+            // Add the comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: commentBody
+            });
+
+  issue_code_on_approval:
+    name: Generate VIP Code on Admin Approval
+    if: github.event.action == 'labeled' && github.event.label.name == 'VIP-Approved'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate VIP Code
+        id: gen_code
+        run: |
+          # Generate a random 6-character hex code
+          CODE="PLUS-VIP-$(openssl rand -hex 3 | tr 'a-z' 'A-Z')"
+          echo "vip_code=$CODE" >> $GITHUB_OUTPUT
+
+      - name: Comment with Code and Close
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const vipCode = '${{ steps.gen_code.outputs.vip_code }}';
+            const issueUser = context.payload.issue.user.login;
+            
+            const commentBody = `
+            🎉 **VERIFICATION SUCCESSFUL! Congratulations @${issueUser}!** 
+            
+            Our admin team has approved your application. You are now officially invited to the Lifetime Symbiosis program.
+            
+            > 🔑 **Your EXCLUSIVE VIP Invite Code:** \`${vipCode}\`
+            
+            **Final Steps:**
+            1. Go to the [Exclusive Smart Contract Portal](https://plusmain.net/partnership/contract)
+            2. Enter your Invite Code.
+            3. Connect your Web3 Wallet and Sign the Lifetime 30% Affiliate Contract.
+            
+            *Note: This code is single-use and will expire in 24 hours. Do not share it.*
+            `;
+            
+            // Add the comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: commentBody
+            });
+            
+            // Close the issue automatically
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              state: 'closed',
+              state_reason: 'completed'
+            });
